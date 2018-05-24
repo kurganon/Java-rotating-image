@@ -9,16 +9,16 @@ import java.awt.image.WritableRaster;
 
 public class DrawDetails {
 	
-	//Zu zeichnendes Bild
+	//image to draw
 	private Image img;
 	
-	//Position im Panel
+	//Position
 	private int posx;
 	private int posy;
 	
-	//Gesamtbreite und - höhe
-	private int breite;
-	private int hoehe;
+	//totalwidth and height
+	private int width;
+	private int height;
 	
 	public DrawDetails() {
 		
@@ -26,28 +26,28 @@ public class DrawDetails {
 	
 	
 	/**
-	 * Rückgabe dessen was gezeichnet werden soll.
+	 * Returns the image to be drawn
 	 * @return
 	 */
 	public Image getImage() {
 		return this.img;
 	}
-	/*
-	 * Bestimmen dessen was gezeichnet werden soll
+	/**
+	 * sets the image to be drawn
 	 */
 	public void setImage(Image img) {
 		this.img = img;
 	}
 
 	/**
-	 * Rückgabe der X Position (von links)
+	 * returns x position (from left)
 	 * @return
 	 */
 	public int getPosX() {
 		return this.posx;
 	}
 	/**
-	 * Bestimmen der X Position (von links)
+	 * sets x position (from left)
 	 * @param posX
 	 */
 	public void setPosX(int posX) {
@@ -55,14 +55,14 @@ public class DrawDetails {
 	}
 
 	/**
-	 * Rückgabe der Y Position (von oben)
+	 * returns y position (from above)
 	 * @return
 	 */
 	public int getPosY() {
 		return this.posy;
 	}
 	/**
-	 * Bestimmen der Y Position (von oben)
+	 * sets y position (from above)
 	 * @param posY
 	 */
 	public void setPosY(int posY) {
@@ -70,132 +70,104 @@ public class DrawDetails {
 	}
 
 	/**
-	 * Rückgabe der Breite
+	 * returns width
 	 * @return
 	 */
-	public int getBreite() {
-		return this.breite;
+	public int getWidth() {
+		return this.width;
 	}
 	/**
-	 * Bestimmen der Breite
-	 * @param breite
+	 * sets width
+	 * @param width
 	 */
-	public void setBreite(int breite) {
-		this.breite = breite;
+	public void setWidth(int width) {
+		this.width = width;
 	}
 
 	/**
-	 * Rückgabe der Höhe
+	 * returns height
 	 * @return
 	 */
-	public int getHoehe() {
-		return this.hoehe;
+	public int getHeight() {
+		return this.height;
 	}
 	/**
-	 * Bestimmen der Höhe
-	 * @param hoehe
+	 * sets height
+	 * @param height
 	 */
-	public void setHoehe(int hoehe) {
-		this.hoehe = hoehe;
+	public void setHeight(int height) {
+		this.height = height;
 	}
 
 	/**
-	 * Alle Variablen gleichzeitig bestimmen
+	 * Setting all variables at once
 	 * @param img
-	 * Das zu zeichnende Bild
+	 * the to be drawn image
 	 * @param posx
-	 * Die X Position
+	 * X position
 	 * @param posy
-	 * Die Y Position
-	 * @param breite
-	 * Breitenverzerrung
-	 * @param hoehe
-	 * Höhenverzerrung
+	 * Y position
+	 * @param width
+	 * total width
+	 * @param height
+	 * total height
 	 */
-	public void setAll(Image img, int posx, int posy, int breite, int hoehe) {
+	public void setAll(Image img, int posx, int posy, int width, int height) {
 		this.img = img;
 		this.posx = posx;
 		this.posy = posy;
-		this.breite = breite;
-		this.hoehe = hoehe;
+		this.width = width;
+		this.height = height;
 	}
 	
+	// image altering static methods
 	/**
-	 * Bildbearbeitende Funktionen, die statisch aufgerufen werden können
-	 * Zum drehen eines (quadratischen) Bilds
+	 * rotation of an (square) image
 	 */
 	public static BufferedImage rotate2(BufferedImage bufferedimage, int centerx, int centery, int degrees) {
-		//Erst eine frische Kopie des Bilds gemacht
+		//First made a separate copy of the image
 		BufferedImage image = new BufferedImage(bufferedimage.getWidth(), bufferedimage.getHeight(), BufferedImage.TYPE_INT_ARGB);
 		
-		//Aus dem Winkel in Grad den Winkel in Radians berechnet
+		//calculated the radians out of the degrees
 		double radians = degrees * Math.PI / 180;
 		
-		//Ein Objekt dass Bilder neu berechnet
-		// wenn man damit umzugehen weiß
+		//Basically a mask that alters the image, as far as I understood
 		AffineTransform affine = new AffineTransform();
 		
-		//Eine Maske zur berechnungder wahrscheinlichen neuen
-		// Position der Koordinaten
+		//a mask to calculate the likely position of a coordinate after rotating it
 		double[][] mask = {
 				{Math.cos(radians), (Math.sin(radians) * -1)},
 				{Math.sin(radians), Math.cos(radians)}
 		};
 		int zx, zy;
 		
-		//Berechnung der neuen Koordinaten
-		//und direkt anschließend den Wert den man
-		//zum korrigieren der Positionsveränderung durch
-		// die Bildbearbeitung braucht
+		//Calculating the new position of the centerpixel
+		//and using it, to know how much to move the image to cancel out the movement of the rotation
 		zx = (int)Math.round(centerx * mask[0][0] 
 				+ centery * mask[0][1]);
 		zx = (zx < 0 ? zx * -1 + (centerx) : (centerx) - zx);
-		//oben für X und unten für Y
+		//above for X and below for Y
 		zy = (int)Math.round((centerx * mask[1][0]) 
 				+ (centery * mask[1][1]));
 		zy = (zy < 0 ? zy * -1 + (centery) : (centery) - zy);
 		
-		// Theta ist der Winkel in Radians
-		//Verschiebung des Bilds, damit es am Ende dort landet wo es angefangen hat
+		//moving the image back to a position from where the rotation will move it to the original position
 		affine.setToTranslation(zx, zy);
-		//Drehen des Bilds dem Winkel entsprechend
+		//rotating the image
 		affine.rotate(radians);
 		
-		//Objekt, dass die Änderungen/Maske auch auf Bilder anwendet
-		// und nicht nur bei der Ausgabe
+		//Not sure, but in my experience that class makes the mask apply to images and not just to the output
 		AffineTransformOp affineOp = new AffineTransformOp(affine, AffineTransformOp.TYPE_BILINEAR);
 		
-		//Veränderung des Bilds "bufferedimage" und dann speichern in "image"
+		//alters the bufferedimage and pastes it into image
 		affineOp.filter(bufferedimage, image);
 		
-		//Verklaren der Pixel, evtl. für Performance auskommentieren:
-		/*
-		int tempargb;
-		for(int i = 0; i < image.getWidth(); i++) {
-			for(int j = 0; j < image.getHeight(); j++) {
-				tempargb = image.getRGB(i, j);
-				
-				if(((tempargb>>24) & 0xFF) <= 0x88) {
-			        int color = tempargb & 0x00ffffff;
-			        int alpha = 0x00 << 24;
-			        tempargb = color | alpha;
-				}else if(((tempargb>>24) & 0xFF) > 0x88) {
-			        int color = tempargb & 0x00ffffff;
-			        int alpha = 0xff << 24;
-			        tempargb = color | alpha;
-				}
-				image.setRGB(i, j, tempargb);
-			}
-		}
-		*/
-		
-		//Rückgabe des gedrehten Bilds
+		//returning of the rotated image
 		return image;
 	}
 	
 	/**
-	 * Bildbearbeitende Funktionen, die statisch aufgerufen werden können
-	 * Zum drehen eines (quadratischen) Bilds
+	 * closest attempt at rotating an image before giving up and using AffineTransform anyway
 	 */
 	public static BufferedImage rotate(BufferedImage bufferedimage, int centerx, int centery, int degrees) {
 		BufferedImage image = new BufferedImage(bufferedimage.getWidth(), bufferedimage.getHeight(), BufferedImage.TYPE_INT_ARGB);
@@ -235,8 +207,8 @@ public class DrawDetails {
 	
 	/** 
 	 * Deep Copy of bufferedImage
-	 * Sonst blenden alle der Buchstaben aus und nicht nur die, die ich nur kurz brauche
-	 * soweit nicht ganz sicher wie das funktioniert
+	 * otherwise alterations of one image affect all outputs of the image (if I phrased that correctly)
+	 * copied from stack overflow, have yet to look into how it works
 	 */
 	public static BufferedImage deepCopy(BufferedImage bi) {
 		ColorModel cm = bi.getColorModel();
